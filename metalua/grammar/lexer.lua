@@ -196,6 +196,7 @@ end
 ---@field tag string
 ---@field content string
 ---@field lineinfo lineinfo
+---@field next token
 new_metatable("token")
 
 ---@param tag string
