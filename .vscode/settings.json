@@ -1,0 +1,6 @@
+{
+  "Lua.diagnostics.globals": [
+    "utf8",
+    "love",
+  ]
+}

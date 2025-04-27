@@ -29,7 +29,7 @@ local M = {}
 M.__index = M
 
 local pp = require("metalua.pprint")
-require("stringutils")
+require("stringutils.string")
 
 
 --------------------------------------------------------------------------------

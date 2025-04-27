@@ -2,7 +2,7 @@ local describe = require("busted").describe
 local assert = require("busted").assert
 local it = require("busted").it
 
-require("stringutils")
+require("stringutils.string")
 
 local inputs = require("spec.ast_inputs")
 local mlc = require('metalua.compiler').new()
