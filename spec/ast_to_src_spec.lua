@@ -18,7 +18,9 @@ end
 
 describe('ast_to_src #ast', function()
   local function do_code(ast, seen_comments)
-    local code, comments = mlc:ast_to_src(ast, seen_comments, w)
+    local a2s = mlc:a2s(seen_comments, w)
+    local code, comments = a2s:run(ast)
+
     local seen = seen_comments or {}
     for k, v in pairs(comments or {}) do
       --- if a table was passed in, this modifies it
