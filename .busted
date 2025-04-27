@@ -1,0 +1,10 @@
+return {
+    default = {
+        ROOT = "spec",
+        ["defer-print"] = true,
+    },
+    all = {
+        ROOT = "spec",
+        ["defer-print"] = true,
+    },
+}
