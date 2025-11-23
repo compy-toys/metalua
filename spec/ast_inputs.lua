@@ -996,6 +996,17 @@ local functions = {
     --   'end',
   }
   ),
+  prep('x["y"] = function(a) end', {
+    'function x.y(a)',
+    '  ',
+    'end',
+  }),
+  prep('x[1] = function() end', {
+    'x[1] = function()',
+    '  ',
+    'end',
+  }),
+  prep('x[y][z] = a'),
 }
 local self = {
   prep({
@@ -1129,7 +1140,19 @@ local canon = {
       'end'
     }),
 
-  prep('   x = 2', 'x = 2')
+  prep('   x = 2', 'x = 2'),
+  prep('x["y"] = 2', 'x.y = 2'),
+  prep({
+    [[function inPaletteRange(x, y)
+  return
+    (height - pal_h <= y and width - pal_w <= x and x <= width)
+    end]]
+  }, {
+    'function inPaletteRange(x, y)',
+    '  return ',
+    '    (height - pal_h <= y and width - pal_w <= x and x <= width)',
+    'end',
+  }),
 }
 
 local full = {
