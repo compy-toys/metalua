@@ -175,7 +175,7 @@ end
 ----------------------------------------------------------------
 function M:nldedent()
   self.current_indent = self.current_indent - 1
-  self:acc("\n" .. self.indent_step:rep(self.current_indent))
+  self:nl('noextra')
 end
 
 ----------------------------------------------------------------
