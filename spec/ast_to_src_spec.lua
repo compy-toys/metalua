@@ -16,7 +16,7 @@ local parse_prot = function(code)
   return pcall(mlc.src_to_ast, mlc, c)
 end
 
-describe('ast_to_src #ast', function()
+describe('ast_to_src #src', function()
   local function do_code(ast, seen_comments)
     local a2s = mlc:a2s(seen_comments, w)
     local code, comments = a2s:run(ast)
