@@ -1,4 +1,4 @@
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Copyright (c) 2006-2013 Fabien Fleutot and others.
 ---
 --- All rights reserved.
@@ -15,7 +15,7 @@
 --- Contributors:
 ---     Fabien Fleutot - API and implementation
 ---
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 
 --- @class M
 --- @field _acc table
@@ -32,12 +32,12 @@ local pp = require("metalua.pprint")
 require("stringutils.string")
 
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Instantiate a new AST->source synthetizer
 --- @param seen_comments integer[]?
 --- @param w integer?
 --- @return M
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M.new(seen_comments, w)
   local self = {
     -- Accumulates pieces of source as strings
@@ -58,15 +58,16 @@ function M.new(seen_comments, w)
   return setmetatable(self, M)
 end
 
---------------------------------------------------------------------------------
---- Run a synthetizer on the `ast' arg and return the source as a string.
---- Can also be used as a static method `M.run (ast)'; in this case,
---- a temporary Metizer is instantiated on the fly.
+----------------------------------------------------------------
+--- Run a synthetizer on the `ast' arg and return the source as
+--- a string.
+--- Can also be used as a static method `M.run (ast)';
+--- in this case a temporary Metizer is instantiated on the fly.
 --- @param seen_comments integer[]?
 --- @param w integer?
 --- @return string
 --- @return integer[]
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:run(ast, seen_comments, w)
   if not ast then
     self, ast = M.new(seen_comments, w), self
@@ -82,11 +83,12 @@ function M:render()
   return table.concat(self._acc), self.comment_ids
 end
 
---------------------------------------------------------------------------------
---- Spin up another instance and render the source for the passed node
+----------------------------------------------------------------
+--- Spin up another instance and render the source for the
+--- passed node
 --- @param node token
 --- @return string
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:prerender(node)
   local comments = {}
   for k, v in pairs(self.comment_ids) do
@@ -100,10 +102,10 @@ function M:prerender(node)
   return rendered
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Accumulate a piece of source file in the synthetizer.
 --- @param x string
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:acc(x)
   if x then
     local clen = self._line_len
@@ -124,10 +126,10 @@ function M:acc(x)
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Check if a piece of source can fit within the width limit
 --- @param s string
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:fits(s)
   if type(s) == 'string' then
     local clen = self._line_len
@@ -139,14 +141,15 @@ function M:fits(s)
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Accumulate an indented newline.
 --- Jumps an extra line if indentation is 0, so that
 --- toplevel definitions are separated by an extra empty line.
---- For some use cases, the extra line is not desired, can be overridden
+--- For some use cases, the extra line is not desired,
+--- can be overridden for those
 --- e.g. multiple comments don't need the extra line in between.
 --- @param noextra? 'noextra'
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:nl(noextra)
   if self.current_indent == 0 and not noextra then
     self:acc("\n")
@@ -159,26 +162,26 @@ function M:nl(noextra)
   self._lines = self._lines + 1
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Increase indentation and accumulate a new line.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:nlindent()
   self.current_indent = self.current_indent + 1
   self:nl()
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Decrease indentation and accumulate a new line.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:nldedent()
   self.current_indent = self.current_indent - 1
   self:acc("\n" .. self.indent_step:rep(self.current_indent))
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Insert a new line indented differently. Default is one deeper.
 --- @param extra integer?
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:nltempindent(extra)
   local add = extra or 1
   local depth = self.current_indent
@@ -187,9 +190,9 @@ function M:nltempindent(extra)
   self.current_indent = depth
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Keywords, which are illegal as identifiers.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local keywords_list = {
   "and",
   "break",
@@ -218,25 +221,26 @@ for _, kw in pairs(keywords_list) do
   keywords[kw] = true
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Return true iff string `id' is a legal identifier name.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local function is_ident(id)
   -- HACK:
   if type(id) ~= "string" then
     return false
   end
-  return string["match"](id, "^[%a_][%w_]*$") and not keywords[id]
+  return
+      string["match"](id, "^[%a_][%w_]*$") and not keywords[id]
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Return true iff ast represents a legal function name for
 --- syntax sugar ``function foo.bar.gnat() ... end'':
 --- a series of nested string indexes, with an identifier as
 --- the innermost node.
 --- @param ast table
 --- @return boolean
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local function is_idx_stack(ast)
   local tag = ast.tag
   if tag == "Index" then
@@ -248,12 +252,12 @@ local function is_idx_stack(ast)
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Returns the length of a call/index chain
 --- @param ast table
 --- @param depth integer?
 --- @return integer
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local function is_call_chain(ast, depth)
   local d = depth or 0
   local tag = ast.tag
@@ -266,10 +270,10 @@ local function is_call_chain(ast, depth)
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Operator precedences, in increasing order.
 --- This is not directly used, it's used to generate op_prec below.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local op_preprec = {
   { "or",    "and" },
   { "lt",    "le",    "eq",  "ne" },
@@ -281,9 +285,9 @@ local op_preprec = {
   { "index" },
 }
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- operator --> precedence table, generated from op_preprec.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local op_prec = {}
 
 for prec, ops in ipairs(op_preprec) do
@@ -292,9 +296,9 @@ for prec, ops in ipairs(op_preprec) do
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- operator --> source representation.
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local op_symbol = {
   add = " + ",
   sub = " - ",
@@ -314,17 +318,17 @@ local op_symbol = {
   unm = "-",
 }
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- boolean operators that tie compound conditions together
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local op_cond = { ["and"] = true, ["or"] = true }
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- right-binding associative operators
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local op_infixr_assoc = { concat = true }
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- commutative operators
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 local op_comm = {
   add = true,
   mul = true,
@@ -332,11 +336,11 @@ local op_comm = {
   ["or"] = true,
 }
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Extract comments from AST
 --- @param node token
 --- @return table
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:extract_comments(node)
   if not node.lineinfo then return {} end
   local lfi = node.lineinfo.first
@@ -348,19 +352,20 @@ function M:extract_comments(node)
   local function add_comment(c, pos)
     local idf = c.lineinfo.first.id
     local idl = c.lineinfo.last.id
-    --- the same comment might get picked up both as preceding the next
-    --- expression and succeeding the previous one
+    --- the same comment might get picked up both as preceding
+    --- the next expression and succeeding the previous one
     local present = self.comment_ids[idf] or self.comment_ids[idl]
     if not present then
       local comment_text    = c[1]
-      --- [[]] comments get parsed into two lexemes (the second is empty)
+      --- [[]] comments get parsed into two lexemes
+      --- (the second is empty)
       local has_next        = c[2]
       local cfi             = c.lineinfo.first
       local cla             = c.lineinfo.last
       local cfirst          = { l = cfi.line, c = cfi.column }
       local clast           = { l = cla.line, c = cla.column }
-      --- if the number of lines in the text is less than the apparent
-      --- positions, add the newline back
+      --- if the number of lines in the text is less than the
+      --- apparent positions, add the newline back
       local n_l             = #(string.lines(comment_text))
       local l_d             = cla.line - cfi.line
       local newline         = (n_l ~= 0 and n_l == l_d)
@@ -393,14 +398,14 @@ function M:extract_comments(node)
   return comments
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Accumulate the source representation of AST `node' in
 --- the synthetizer. Most of the work is done by delegating to
 --- the method having the name of the AST tag.
 --- If something can't be converted to normal sources, it's
 --- instead dumped as a `-{ ... }' splice in the source accumulator.
 --- @param node token
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:node(node)
   assert(self ~= M and self._acc)
   if node == nil then
@@ -410,7 +415,7 @@ function M:node(node)
   local comments = self:extract_comments(node)
   --- @param pos 'first'|'last'
   local function show_comments(pos)
-    --- to avoid double dipping, only show corresponding comments
+    --- to avoid double dipping, only show corresponding
     for _, co in pairs(comments) do
       if co.position == pos then
         --- comes _after_ a previous expression
@@ -438,7 +443,8 @@ function M:node(node)
         else
           local ls = co.first.l
           local le = co.last.l
-          local wrapped = string.wrap_array(lines, self.wrap - 3)
+          local wrapped =
+              string.wrap_array(lines, self.wrap - 3)
           if ls == le then
             --- (originally) single line comment
             if co.text == '' then
@@ -503,17 +509,17 @@ function M:node(node)
   show_comments('last')
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- Convert every node in the AST list passed as 1st arg.
 --- @param list table
 --- @param sep string|function
---- Optional separator to be accumulated between each list element,
---- it can be a string or a synth method.
+--- Optional separator to be accumulated between each list
+--- element, it can be a string or a synth method.
 --- @param start integer?
 --- Optional number (default == 1), indicating which is the
---- first element of list to be converted, so that we can skip the begining
---- of a list.
---------------------------------------------------------------------------------
+--- first element of list to be converted, so that we can skip
+--- the begining of a list.
+----------------------------------------------------------------
 function M:list(list, sep, start)
   for i = start or 1, #list do
     self:node(list[i])
@@ -530,13 +536,13 @@ function M:list(list, sep, start)
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 --- M:list() with line wrapping
 --- @param list table
 --- @param sep string|function
 --- @param start integer?
 --- @param split 'single'|'all'?
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 function M:wrapped_list(list, sep, start, split)
   local function prerender_list()
     local s = ''
@@ -589,30 +595,32 @@ function M:wrapped_list(list, sep, start, split)
   end
 end
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------
 ---
 --- Tag methods.
 --- ------------
 ---
---- Specific AST node dumping methods, associated to their node kinds
---- by their name, which is the corresponding AST tag.
---- synth:node() is in charge of delegating a node's treatment to the
---- appropriate tag method.
+--- Specific AST node dumping methods, associated to their node
+--- kinds by their name, which is the corresponding AST tag.
+--- synth:node() is in charge of delegating a node's treatment
+--- to the appropriate tag method.
 ---
 --- Such tag methods are called with the AST node as 1st arg.
---- As a convenience, the n node's children are passed as args #2 ... n+1.
+--- As a convenience, the n node's children are passed as
+--- args #2 ... n+1.
 ---
---- There are several things that could be refactored into common subroutines
---- here: statement blocks dumping, function dumping...
+--- There are several things that could be refactored into
+--- common subroutines here: statement blocks dumping,
+--- function dumping...
 --- However, given their small size and linear execution
 --- (they basically perform series of :acc(), :node(), :list(),
 --- :nl*() calls), it seems more readable
 --- to avoid multiplication of such tiny functions.
 ---
---- To make sense out of these, you need to know metalua's AST syntax, as
---- found in the reference manual or in metalua/doc/ast.txt.
----
---------------------------------------------------------------------------------
+--- To make sense out of these, you need to know metalua's AST
+--- syntax, as found in the reference manual or in
+--- metalua/doc/ast.txt.
+----------------------------------------------------------------
 
 function M:Do(node)
   self:acc("do")
@@ -628,8 +636,10 @@ function M:Set(node)
   if
   --- LHS = { `Index{ lhs, `String{ method } } },
   ---       { `Index{ lhs[1][1], `String{ lhs[1][2][1] } } },
-  --- RHS = { `Function{ { `Id "self", ... } == params, body } } }
-  ---       { `Function{ { `Id "rhs[1][1][1][1]", ... } == params, body } } }
+  --- RHS = { `Function{ { `Id "self", ... } ==
+  ---                                     params, body } } }
+  ---       { `Function{ { `Id "rhs[1][1][1][1]", ... } ==
+  ---                                     params, body } } }
       lhs[1].tag == "Index"
       and rhs[1].tag == "Function"
       and rhs[1][1][1] and rhs[1][1][1][1] == "self"
@@ -673,7 +683,7 @@ function M:Set(node)
            and not is_ident(lhs[1][2][1])
        then
           --- block 3
-          --- `foo, ... = ...` when foo is *not* a valid identifier.
+          --- `foo, ... = ...` when foo is *not* a valid id.
           --- In that case, the spliced 1st variable must get parentheses,
           --- to be distinguished from a statement splice.
           --- This cannot happen in a plain Lua AST.
@@ -760,7 +770,8 @@ function M:Fornum(node, var, first, last)
   self:node(first)
   self:acc(", ")
   self:node(last)
-  if #node == 5 then --- 5 children --> child #4 is a step increment.
+  if #node == 5 then --- 5 children -->
+    ---                              child #4 is a step increment.
     self:acc(", ")
     self:node(node[4])
   end
@@ -807,7 +818,8 @@ function M:Local(node, lhs, rhs, annots)
       self:wrapped_list(rhs, ", ")
     end
   else
-    --- Can't create a local statement with 0 variables in plain Lua
+    --- Can't create a local statement with 0 variables in
+    --- plain Lua
     self:acc(pp.tostring(node, "nohash"))
   end
 end
@@ -845,7 +857,8 @@ function M:Invoke(node, f, method)
   self:acc(":")
   self:acc(method[1])
   self:acc("(")
-  self:wrapped_list(node, ", ", 3, 'all') --- Skip args #1 and #2, object and method name.
+  --- Skip args #1 and #2, object and method name.
+  self:wrapped_list(node, ", ", 3, 'all')
   self:acc(")")
 end
 
@@ -884,7 +897,8 @@ function M:String(_, str)
     local ls = string.wrap_array(split, wl)
     for i, v in ipairs(ls) do
       rendered = rendered .. "\n" .. self.indent_step
-      rendered = rendered .. string.format("%q", v):gsub("\\\\", [[\]])
+      rendered = rendered ..
+          string.format("%q", v):gsub("\\\\", [[\]])
       if i ~= #ls then
         rendered = rendered .. ' ..'
       end
@@ -999,11 +1013,14 @@ function M:Op(node, op, a, b)
     if op_cond[op] then
       local pre = op_symbol[op] .. self:prerender(b)
       if not self:fits(pre)
-          or (type(a[2]) == "table"
+          or (
+            type(a[2]) == "table"
             and type(b[2]) == "table"
             and (a[2].lineinfo and b[2].lineinfo
               and a[2].lineinfo.first and b[2].lineinfo.first
-              and a[2].lineinfo.first.line < b[2].lineinfo.first.line))
+              and a[2].lineinfo.first.line <
+              b[2].lineinfo.first.line)
+          )
       then
         self:nltempindent(2)
       end
@@ -1040,7 +1057,9 @@ end
 
 function M:Index(_, table, key)
   local paren_table
-  if table.tag == "Op" and op_prec[table[1][1]] < op_prec.index then
+  if table.tag == "Op"
+      and op_prec[table[1][1]] < op_prec.index
+  then
     paren_table = true
   else
     paren_table = false
@@ -1066,7 +1085,7 @@ function M:Id(node, name)
   if is_ident(name) then
     self:acc(name)
   else
-    --- Unprintable identifier, fall back to splice representation.
+    --- Unprintable identifier, fall back to splice repr.
     --- This cannot happen in a plain Lua AST.
     self:acc("-{`Id ")
     self:String(node, name)
@@ -1150,7 +1169,8 @@ end
 --     end
 -- end
 
--- print(M.run(+{stat: local function add(a, b) local c = a + b; return add(a,c) end}))
+-- print(M.run(+{stat: local function add(a, b)
+--    local c = a + b; return add(a,c) end}))
 
 M.oneshot = function(x, ...)
   local a2s = M.new(...)
