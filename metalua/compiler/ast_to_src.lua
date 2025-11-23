@@ -244,6 +244,9 @@ end
 local function is_idx_stack(ast)
   local tag = ast.tag
   if tag == "Index" then
+    if ast[2] then
+      return ast[2].tag == "Id" or ast[2].tag == "String"
+    end
     return is_idx_stack(ast[1])
   elseif tag == "Id" then
     return true
