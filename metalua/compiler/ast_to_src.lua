@@ -143,19 +143,8 @@ end
 
 ----------------------------------------------------------------
 --- Accumulate an indented newline.
---- Jumps an extra line if indentation is 0, so that
---- toplevel definitions are separated by an extra empty line.
---- For some use cases, the extra line is not desired,
---- can be overridden for those
---- e.g. multiple comments don't need the extra line in between.
---- @param noextra? 'noextra'
 ----------------------------------------------------------------
-function M:nl(noextra)
-  if self.current_indent == 0 and not noextra then
-    self:acc("\n")
-    self._line_len = 0
-    self._lines = self._lines + 1
-  end
+function M:nl()
   local ind = self.indent_step:rep(self.current_indent)
   self:acc("\n" .. ind)
   self._line_len = string.len(ind)
@@ -175,7 +164,7 @@ end
 ----------------------------------------------------------------
 function M:nldedent()
   self.current_indent = self.current_indent - 1
-  self:nl('noextra')
+  self:nl()
 end
 
 ----------------------------------------------------------------
@@ -422,7 +411,7 @@ function M:node(node)
     for _, co in pairs(comments) do
       if co.position == pos then
         --- comes _after_ a previous expression
-        if co.position == 'last' then self:nl('noextra') end
+        if co.position == 'last' then self:nl() end
         --- preserve existing newlines
         local lines = string.lines(co.text)
         if co.multiline then
@@ -441,7 +430,7 @@ function M:node(node)
           local wrapped = string.wrap_array(lines, self.wrap)
           for i, l in ipairs(wrapped) do
             self:acc(l)
-            if i ~= #wrapped then self:nl('noextra') end
+            if i ~= #wrapped then self:nl() end
           end
         else
           local ls = co.first.l
@@ -465,7 +454,7 @@ function M:node(node)
                   pre = pre .. ' '
                 end
                 self:acc(pre .. l)
-                if i ~= #wrapped then self:nl('noextra') end
+                if i ~= #wrapped then self:nl() end
               end
             end
           else
@@ -481,12 +470,12 @@ function M:node(node)
                 pre = pre .. ' '
               end
               self:acc(pre .. l)
-              if i ~= #wrapped then self:nl('noextra') end
+              if i ~= #wrapped then self:nl() end
             end
           end
         end
         --- comes _before_ the next expression
-        if co.position == 'first' then self:nl('noextra') end
+        if co.position == 'first' then self:nl() end
       end
     end
   end
@@ -746,7 +735,7 @@ function M:If(node)
     self:node(cond)
     local ml = self._lines > lc
     if ml then
-      self:nl('noextra')
+      self:nl()
       self:acc("then")
     else
       self:acc(" then")
@@ -935,7 +924,6 @@ function M:Function(_, params, body, annots)
   self:list(body, self.nl)
   self:nldedent()
   self:acc("end")
-  -- self:nl('noextra')
 end
 
 function M:Table(node)
