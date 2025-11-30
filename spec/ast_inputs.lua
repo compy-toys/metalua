@@ -1153,6 +1153,10 @@ local canon = {
     '    (height - pal_h <= y and width - pal_w <= x and x <= width)',
     'end',
   }),
+
+  --- invoking on string literals needs it to be enclosed
+  prep('"string literal":gsub()', '("string literal"):gsub()'),
+  prep('("string literal"):gsub()'),
 }
 
 local full = {

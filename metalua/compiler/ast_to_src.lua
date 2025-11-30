@@ -845,7 +845,13 @@ function M:Call(node, f)
 end
 
 function M:Invoke(node, f, method)
-  self:node(f)
+  if node[1].tag == 'String' then
+    self:acc("(")
+    self:node(f)
+    self:acc(")")
+  else
+    self:node(f)
+  end
   self:acc(":")
   self:acc(method[1])
   self:acc("(")
