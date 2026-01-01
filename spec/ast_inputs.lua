@@ -42,7 +42,7 @@ local sierpinski_res = {
 
   '  for i = 2, depth + 1 do',
   -- --- [[ ]] version
-  -- '    sp = string.rep([[ ]], 2 ^ (i - 2))',
+  -- '    sp = string.rep([[ ]], 2 ^ (j - 2))',
   '    sp = string.rep(" ", 2 ^ (i - 2))',
 
   '    tmp = { }',
@@ -316,6 +316,9 @@ local operators = {
 
 local comments = {
   prep({
+    '--- comment',
+  }),
+  prep({
     'y = 10',
     '--- comment',
     'z = 99'
@@ -474,6 +477,23 @@ local comments = {
   }, {
     'a = 3',
     '-- cmt',
+  }),
+
+  prep({
+    'function fun()',
+    '  -- inline',
+    '  ',
+    'end',
+  }),
+  prep({
+    'love.draw = function()',
+    '  -- f',
+    'end',
+  }, {
+    'function love.draw()',
+    '  -- f',
+    '  ',
+    'end',
   }),
 }
 
@@ -1166,12 +1186,6 @@ local full = {
 }
 
 local todo = {
-  --- comment
-  -- prep({
-  --   'love.draw = function()',
-  --   '  -- f',
-  --   'end',
-  -- }),
   prep({
     'direction = {',
     '  up = function(n)',
