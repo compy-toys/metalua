@@ -667,7 +667,7 @@ function M:Set(node)
     self:wrapped_list(params, ", ", nil, 'all')
     self:acc(")")
     self:nlindent()
-    self:list(body, self.nl)
+    self:node(body)
     self:nldedent()
     self:acc("end")
     --- metalua extensions
