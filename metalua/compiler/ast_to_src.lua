@@ -328,6 +328,7 @@ local op_comm = {
   ["or"] = true,
 }
 
+--- @alias CommentPos 'first'|'last'
 ----------------------------------------------------------------
 --- Extract comments from AST
 --- @param node token
@@ -340,7 +341,7 @@ function M:extract_comments(node)
   local comments = {}
 
   --- @param c table
-  --- @param pos 'first'|'last'
+  --- @param pos CommentPos
   local function add_comment(c, pos)
     local idf = c.lineinfo.first.id
     local idl = c.lineinfo.last.id
