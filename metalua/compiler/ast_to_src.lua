@@ -24,6 +24,7 @@
 --- @field _line_len integer
 --- @field _lines integer
 --- @field comment_ids table
+--- @field comment_lines table<integer, boolean>
 --- @field wrap integer
 local M = {}
 M.__index = M
@@ -48,6 +49,7 @@ function M.new(seen_comments, w)
     indent_step = "  ",
     -- Comments index accumulator
     comment_ids = seen_comments or {},
+    comment_lines = {},
     -- Number of characters since last linebreak
     _line_len = 0,
     -- Number of linebreaks
@@ -345,9 +347,13 @@ function M:extract_comments(node)
   local function add_comment(c, pos)
     local idf = c.lineinfo.first.id
     local idl = c.lineinfo.last.id
+    local line = c.lineinfo.first.line
     --- the same comment might get picked up both as preceding
-    --- the next expression and succeeding the previous one
+    --- the next expression and succeeding the previous one;
+    --- chunk and statement nodes may also reference it with
+    --- different lexeme ids.
     local present = self.comment_ids[idf] or self.comment_ids[idl]
+        or self.comment_lines[line]
     if not present then
       local comment_text    = c[1]
       --- [[]] comments get parsed into two lexemes
@@ -374,6 +380,7 @@ function M:extract_comments(node)
       }
       self.comment_ids[idf] = true
       self.comment_ids[idl] = true
+      self.comment_lines[line] = true
       table.insert(comments, li)
     end
   end
