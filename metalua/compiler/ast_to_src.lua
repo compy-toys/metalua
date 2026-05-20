@@ -55,7 +55,9 @@ function M.new(seen_comments, w)
     -- Number of linebreaks
     _lines = 0,
     -- wrap length
-    wrap = w or 80
+    wrap = w or 80,
+    -- Last source line number emitted (used to detect blank-line gaps)
+    _last_nonempty_src_line = 0
   }
   return setmetatable(self, M)
 end
@@ -188,6 +190,32 @@ function M:nltempindent(extra)
   self.current_indent = depth + add
   self:nl()
   self.current_indent = depth
+end
+
+----------------------------------------------------------------
+--- Reset last non-empty source line to the current position
+--- @param pos table?
+----------------------------------------------------------------
+function M:emptyline_gap_reset(pos)
+  local line = pos and (pos.line or pos.l)
+  -- never go backwards
+  if line and line > self._last_nonempty_src_line then
+    self._last_nonempty_src_line = line
+  end
+end
+
+----------------------------------------------------------------
+--- Detect the length of emptyline sequence in the source,
+--- that precedes the current position
+--- @param pos table?
+--- @return integer
+----------------------------------------------------------------
+function M:emptyline_gap_before(pos)
+  local line = pos and (pos.line or pos.l)
+  if line and line > self._last_nonempty_src_line then
+    return line - self._last_nonempty_src_line
+  end
+  return 0
 end
 
 ----------------------------------------------------------------
@@ -429,6 +457,13 @@ function M:node(node)
       if co.position == pos then
         --- comes _after_ a previous expression
         if co.position == 'last' then self:nl() end
+        --- if there was a 'gap' preceding the comment,
+        --- we preserve it by emitting exactly one empty line
+        if co.position == 'first' then
+          if self:emptyline_gap_before(co.first) >= 2 then
+            self:nl()
+          end
+        end
         --- preserve existing newlines
         local lines = string.lines(co.text)
         if co.multiline then
@@ -493,11 +528,18 @@ function M:node(node)
         end
         --- comes _before_ the next expression
         if co.position == 'first' then self:nl() end
+        --- advance non-empty source line tracker to this comment's last line
+        self:emptyline_gap_reset(co.last)
       end
     end
   end
 
   show_comments('first')
+  -- advance non-empty source line tracker, 
+  -- used for detecting emptyline gaps in the source
+  if node.lineinfo and node.lineinfo.first then
+    self:emptyline_gap_reset(node.lineinfo.first)
+  end
   if not node.tag then --- tagless block.
     self:list(node, self.nl)
   else
@@ -514,6 +556,9 @@ function M:node(node)
         { metalua_tag = 1, hide_hash = 1, line_max = 80 }))
       self:acc(" }")
     end
+  end
+  if node.lineinfo and node.lineinfo.last then
+    self:emptyline_gap_reset(node.lineinfo.last)
   end
   show_comments('last')
 end
