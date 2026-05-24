@@ -115,16 +115,25 @@ function M:acc(x)
     local lines = string.lines(x)
     local n_l = #lines
     if l + clen > self.wrap
-        -- if the string has multiple lines, handle it elsewhere
+        --- if the string has multiple lines,
+        --- handle it elsewhere
         and n_l < 2
+        --- don't create a leading empty line
+        --- for an overlong token
+        and clen > 0
     then
+      --- The formatter already emits a newline plus
+      --- continuation indent here; keep separator spacing from
+      --- adding a fifth visual indent column.
+      local wrapped_x = x:gsub("^%s+", "")
       local ind = self.indent_step:rep(self.current_indent + 2)
       self:acc("\n" .. ind)
       self._line_len = #ind
+      table.insert(self._acc, wrapped_x)
     else
       self._line_len = clen + l
+      table.insert(self._acc, x)
     end
-    table.insert(self._acc, x)
   end
 end
 
@@ -355,20 +364,20 @@ function M:extract_comments(node)
     local present = self.comment_ids[idf] or self.comment_ids[idl]
         or self.comment_lines[line]
     if not present then
-      local comment_text    = c[1]
+      local comment_text       = c[1]
       --- [[]] comments get parsed into two lexemes
       --- (the second is empty)
-      local has_next        = c[2]
-      local cfi             = c.lineinfo.first
-      local cla             = c.lineinfo.last
-      local cfirst          = { l = cfi.line, c = cfi.column }
-      local clast           = { l = cla.line, c = cla.column }
+      local has_next           = c[2]
+      local cfi                = c.lineinfo.first
+      local cla                = c.lineinfo.last
+      local cfirst             = { l = cfi.line, c = cfi.column }
+      local clast              = { l = cla.line, c = cla.column }
       --- if the number of lines in the text is less than the
       --- apparent positions, add the newline back
-      local n_l             = #(string.lines(comment_text))
-      local l_d             = cla.line - cfi.line
-      local newline         = (n_l ~= 0 and n_l == l_d)
-      local li              = {
+      local n_l                = #(string.lines(comment_text))
+      local l_d                = cla.line - cfi.line
+      local newline            = (n_l ~= 0 and n_l == l_d)
+      local li                 = {
         idf = idf,
         idl = idl,
         first = cfirst,
@@ -378,8 +387,8 @@ function M:extract_comments(node)
         position = pos,
         prepend_newline = newline
       }
-      self.comment_ids[idf] = true
-      self.comment_ids[idl] = true
+      self.comment_ids[idf]    = true
+      self.comment_ids[idl]    = true
       self.comment_lines[line] = true
       table.insert(comments, li)
     end
