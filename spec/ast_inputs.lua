@@ -729,7 +729,7 @@ local wrapping = {
   }),
   prep('local longcomp2 = 1001 + 1002 + 1003 + 1004 + 1005 + 1006 + 1007 + 1008 + 1009', {
     'local longcomp2 = 1001 + 1002 + 1003 + 1004 + 1005 + 1006 + 1007',
-    '     + 1008 + 1009'
+    '    + 1008 + 1009'
   }),
 
   --- multi-assignments that again, probably should be broken up

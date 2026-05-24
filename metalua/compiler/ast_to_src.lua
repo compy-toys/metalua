@@ -117,14 +117,20 @@ function M:acc(x)
     if l + clen > self.wrap
         -- if the string has multiple lines, handle it elsewhere
         and n_l < 2
+        -- don't create a leading empty line for an overlong token
+        and clen > 0
     then
+      -- The formatter already emits a newline plus continuation indent here;
+      -- keep separator spacing from adding a fifth visual indent column.
+      local wrapped_x = x:gsub("^%s+", "")
       local ind = self.indent_step:rep(self.current_indent + 2)
       self:acc("\n" .. ind)
       self._line_len = #ind
+      table.insert(self._acc, wrapped_x)
     else
       self._line_len = clen + l
+      table.insert(self._acc, x)
     end
-    table.insert(self._acc, x)
   end
 end
 
