@@ -11,3 +11,6 @@ test TAG:
 
 tests:
   @busted spec
+
+lint FILE='':
+  @stylua --column-width 65 {{FILE}}
