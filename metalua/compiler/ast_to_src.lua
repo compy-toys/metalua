@@ -194,7 +194,7 @@ end
 
 ----------------------------------------------------------------
 --- Reset last non-empty source line to the current position
---- @param pos table?
+--- @param pos position|{line: integer}|{l: integer}
 ----------------------------------------------------------------
 function M:emptyline_gap_reset(pos)
   local line = pos and (pos.line or pos.l)
@@ -207,7 +207,7 @@ end
 ----------------------------------------------------------------
 --- Detect the length of emptyline sequence in the source,
 --- that precedes the current position
---- @param pos table?
+--- @param pos position|{line: integer}|{l: integer}
 --- @return integer
 ----------------------------------------------------------------
 function M:emptyline_gap_before(pos)
