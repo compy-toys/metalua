@@ -1,4 +1,4 @@
-local fmt=string.format
+local fmt = string.format
 
 local describe = require("busted").describe
 local assert = require("busted").assert
@@ -7,7 +7,7 @@ local it = require("busted").it
 require("stringutils.string")
 
 local inputs = require("spec.ast_inputs")
-local mlc = require('metalua.compiler').new()
+local mlc = require("metalua.compiler").new()
 
 local w = 64
 
@@ -18,7 +18,7 @@ local parse_prot = function(code)
   return pcall(mlc.src_to_ast, mlc, c)
 end
 
-describe('ast_to_src #src', function()
+describe("ast_to_src #src", function()
   local function do_code(ast, seen_comments)
     local a2s = mlc:a2s(seen_comments, w)
     local code, comments = a2s:run(ast)
@@ -35,11 +35,11 @@ describe('ast_to_src #src', function()
     return code, seen_comments
   end
 
-  describe('produces ASTs', function()
+  describe("produces ASTs", function()
     for _, test_t in pairs(inputs) do
       local tag = test_t[1]
       local tests = test_t[2]
-      describe('for #' .. tag, function()
+      describe("for #" .. tag, function()
         for i, tc in ipairs(tests) do
           local input = tc[1]
           local output = tc[2]
@@ -64,15 +64,15 @@ describe('ast_to_src #src', function()
             end
 
             --- remove trailing newline
-            if result[#result] == '' then
+            if result[#result] == "" then
               table.remove(result)
             end
-            it('matching rule #'..testtag, function()
+            it("matching rule #" .. testtag, function()
               assert.same(output, result)
               assert.is_true(parse_prot(output))
             end)
           else
-            print('syntax error in #' .. testtag)
+            print("syntax error in #" .. testtag)
             print(r)
           end
         end
