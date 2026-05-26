@@ -495,6 +495,179 @@ local comments = {
     '  ',
     'end',
   }),
+
+  prep({
+    '',
+    '-- emptyline before comment must be preserved',
+    'function foo(bar)',
+    '  return ("no comment duplication should happen")',
+    'end'
+  }),
+
+  prep({
+    '',
+    '',
+    '-- multiple emptylines before comment must be squashed',
+  }, {
+    '',
+    '-- multiple emptylines before comment must be squashed',
+  })
+}
+
+local emptylines = {
+
+  -- standalone comment
+
+  prep({'--- standalone comment does not enforce emptylines'}),
+  prep({'',
+       '--- standalone comment preserves emptyline before it'
+  }),
+  prep({
+    '',
+    '',
+    '',
+    '--- standalone comment keeps just one emptyline before it'
+  },{
+    '',
+    '--- standalone comment keeps just one emptyline before it'
+  }),
+
+  -- standalone expression
+
+  prep({
+    'print("standalone expression does not enforce emptylines")'
+  }),
+  prep({
+    '',
+    '',
+    '',
+    'print("standalone expression eliminates emptylines before it")'
+  }, {
+    'print("standalone expression eliminates emptylines before it")'
+  }),
+
+  --- expression+comment
+
+  prep({
+    '-- comment before expression does not enforce emptylines',
+    'print("expectation: no emptylines are injected")',
+  }),
+  prep({
+    '',
+    '',
+    '',
+    '-- comment before expression allows one emptyline before it',
+    'print("expectation: exactly one emptyline is preserved")',
+  }, {
+    '',
+    '-- comment before expression allows one emptyline before it',
+    'print("expectation: exactly one emptyline is preserved")',
+  }),
+
+  -- expressions (multiple)
+
+  prep({
+    'print("rule: no gap between adjacent statemets is enforced")',
+    'print("expecting: no emptyline should be injected")'
+  }),
+  prep({
+    'print("rule: gap between adjacent statements is eliminated")',
+    '',
+    '',
+    '',
+    'print("expecting: no emptylines preserved")'
+  }, {
+    'print("rule: gap between adjacent statements is eliminated")',
+    'print("expecting: no emptylines preserved")'
+  }),
+
+  -- expressions (multiple)  + comment
+
+  prep({
+    'print("rule: comment between statements does not preserve gap")',
+    '',
+    '-- comment between statements does not preserve gap',
+    'print("expecting: emptyline is not preserved")'
+  }, {
+    'print("rule: comment between statements does not preserve gap")',
+    '-- comment between statements does not preserve gap',
+    'print("expecting: emptyline is not preserved")'
+  }),
+
+  -- standalone block
+
+  prep({
+    'function rule()',
+    '  return ("standalone block does not emit emptylines")',
+    'end'
+  }),
+  prep({
+    '',
+    '',
+    '',
+    'function rule()',
+    '  return ("standalone block erases emptylines before it")',
+    'end'
+  }, {
+    'function rule()',
+    '  return ("standalone block erases emptylines before it")',
+    'end'
+  }),
+
+  -- standalone block + comment
+
+  prep({
+    '-- comment before block',
+    'function rule()',
+    '  return ("comment before block does not emit emptylines")',
+    'end'
+  }),
+  prep({
+    '',
+    '',
+    '',
+    '-- comment before block',
+    'function rule()',
+    '  return ("comment before block keeps 1 emptyline before it")',
+    'end'
+  }, {
+    '',
+    '-- comment before block',
+    'function rule()',
+    '  return ("comment before block keeps 1 emptyline before it")',
+    'end'
+  }),
+
+  -- multiple blocks + comment in between
+
+  prep({
+    'function rule()',
+    '  return ("no gaps between blocks are enforced")',
+    'end',
+    '-- comment in between',
+    'function expectation()',
+    '  return ("no emptylines are injected")',
+    'end',
+  }),
+  prep({
+    'function rule()',
+    '  return ("no gaps between blocks are preserved")',
+    'end',
+    '',
+    '-- comment in between',
+    '',
+    'function expectation()',
+    '  return ("no emptylines are kept")',
+    'end',
+  }, {
+    'function rule()',
+    '  return ("no gaps between blocks are preserved")',
+    'end',
+    '-- comment in between',
+    'function expectation()',
+    '  return ("no emptylines are kept")',
+    'end',
+  })
 }
 
 local wrapping = {
@@ -1199,12 +1372,14 @@ local todo = {
   prep('t = { c = 2 }'),
   prep('a = 1'),
 }
+
 return {
   { 'basics',    basics },
   { 'operators', operators },
   { 'functions', functions },
   { 'self',      self },
   { 'comments',  comments },
+  { 'emptylines', emptylines },
   { 'wrap',      wrapping },
   { 'canon',     canon },
   { 'full',      full },

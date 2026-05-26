@@ -1,3 +1,5 @@
+local fmt=string.format
+
 local describe = require("busted").describe
 local assert = require("busted").assert
 local it = require("busted").it
@@ -37,10 +39,11 @@ describe('ast_to_src #src', function()
     for _, test_t in pairs(inputs) do
       local tag = test_t[1]
       local tests = test_t[2]
-      describe('for ' .. tag, function()
+      describe('for #' .. tag, function()
         for i, tc in ipairs(tests) do
           local input = tc[1]
           local output = tc[2]
+          local testtag = fmt("%s_%s", tag, i)
 
           local ok, r = parse_prot(input)
           local result = {}
@@ -64,12 +67,12 @@ describe('ast_to_src #src', function()
             if result[#result] == '' then
               table.remove(result)
             end
-            it('matches ' .. i, function()
+            it('matching rule #'..testtag, function()
               assert.same(output, result)
               assert.is_true(parse_prot(output))
             end)
           else
-            print('syntax error in input #' .. i)
+            print('syntax error in #' .. testtag)
             print(r)
           end
         end
